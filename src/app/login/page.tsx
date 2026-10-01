@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function homeFor(role: string) {
@@ -66,6 +67,11 @@ function LoginForm() {
             {busy ? 'جارٍ الدخول…' : 'دخول'}
           </button>
         </div>
+
+        <p style={{ fontSize: 12, marginTop: 16, textAlign: 'center' }}>
+          معندكش أكونت؟{' '}
+          <Link href="/signup" style={{ color: 'hsl(var(--primary))', fontWeight: 800 }}>اعمل حساب جديد</Link>
+        </p>
       </form>
     </div>
   );
