@@ -3,10 +3,16 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+function homeFor(role: string) {
+  if (role === 'ADMIN') return '/admin';
+  if (role === 'TEACHER') return '/teacher';
+  return '/teachers';
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get('next') || '/admin';
+  const next = params.get('next') || '';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,7 +33,10 @@ function LoginForm() {
         setError(data.error === 'invalid_credentials' ? 'بريد أو كلمة مرور غير صحيحة' : 'تعذر تسجيل الدخول');
         return;
       }
-      router.push(data.user.role === 'TEACHER' ? '/teacher' : next);
+      const home = homeFor(data.user.role);
+      // استخدم next فقط لو هو داخل منطقة نفس الدور (وبداية بـ / مش //)
+      const safeNext = next.startsWith('/') && !next.startsWith('//') && next.startsWith(home) ? next : home;
+      router.push(safeNext);
       router.refresh();
     } catch {
       setError('تعذر تسجيل الدخول');
@@ -47,7 +56,6 @@ function LoginForm() {
           </div>
         </div>
 
-        
         <h1 className="page-title" style={{ fontSize: 22, marginTop: 18 }}>تسجيل الدخول</h1>
         <p className="page-subtitle" style={{ fontSize: 12 }}>للوصول إلى لوحة الإدارة أو لوحة المعلم.</p>
         <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
@@ -58,7 +66,6 @@ function LoginForm() {
             {busy ? 'جارٍ الدخول…' : 'دخول'}
           </button>
         </div>
-       
       </form>
     </div>
   );
