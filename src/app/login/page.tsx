@@ -46,6 +46,8 @@ function LoginForm() {
             <div className="brand-sub" style={{ color: 'hsl(var(--muted-foreground))' }}>Quran learning</div>
           </div>
         </div>
+
+        
         <h1 className="page-title" style={{ fontSize: 22, marginTop: 18 }}>تسجيل الدخول</h1>
         <p className="page-subtitle" style={{ fontSize: 12 }}>للوصول إلى لوحة الإدارة أو لوحة المعلم.</p>
         <div style={{ display: 'grid', gap: 10, marginTop: 18 }}>
