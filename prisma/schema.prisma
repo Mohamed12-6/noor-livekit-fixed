@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("STUDENT") // ADMIN | TEACHER | STUDENT
+  createdAt    DateTime @default(now())
+  teacher      Teacher?
+}
+
+model Teacher {
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id])
+  name       String
+  nameAr     String
+  bio        String
+  tags       String    @default("")
+  initials   String    @default("م")
+  whatsapp   String    @default("")
+  isOnline   Boolean   @default(false)
+  lastSeenAt DateTime  @default(now())
+  bookings   Booking[]
+}
+
+model Settings {
+  id             String   @id @default("main")
+  lessonPriceUsd Float    @default(15)
+  currency       String   @default("USD")
+  updatedAt      DateTime @updatedAt
+}
+
+model Booking {
+  id           String    @id @default(cuid())
+  teacherId    String
+  teacher      Teacher   @relation(fields: [teacherId], references: [id])
+  studentName  String
+  studentEmail String
+  scheduledAt  String
+  priceUsd     Float
+  status       String    @default("PENDING_PAYMENT") // PENDING_PAYMENT | PAID | CONFIRMED | CANCELLED
+  createdAt    DateTime  @default(now())
+  payments     Payment[]
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  bookingId  String
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  provider   String   @default("stripe") // stripe | manual
+  amountUsd  Float
+  status     String   @default("PENDING") // PENDING | SUCCEEDED | FAILED
+  externalId String   @default("")
+  createdAt  DateTime @default(now())
+}
+
+model Call {
+  id        String    @id @default(cuid())
+  teacherId String
+  status    String    @default("ringing") // ringing | accepted | declined | ended
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  signals   SignalMessage[]
+}
+
+model SignalMessage {
+  id        String   @id @default(cuid())
+  callId    String
+  call      Call     @relation(fields: [callId], references: [id])
+  fromRole  String // student | teacher
+  type      String // offer | answer | bye
+  payload   String
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Chat {
+  id          String        @id @default(cuid())
+  teacherId   String
+  studentKey  String
+  studentName String        @default("")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  messages    ChatMessage[]
+
+  @@unique([teacherId, studentKey])
+}
+
+model ChatMessage {
+  id        String    @id @default(cuid())
+  chatId    String
+  chat      Chat      @relation(fields: [chatId], references: [id])
+  fromRole  String // student | teacher
+  body      String
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+}
