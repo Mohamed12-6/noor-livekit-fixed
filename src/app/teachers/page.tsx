@@ -28,7 +28,14 @@ export default function TeachersPage() {
     try {
       const res = await fetch('/api/teachers', { cache: 'no-store' });
       const data = await res.json();
-      setTeachers(data.teachers || []);
+
+      // 👈 هنا نجعل حالة كل معلم أونلاين دائماً بغض النظر عن الاستجابة
+      const teachersAlwaysOnline = (data.teachers || []).map((t: TeacherApi) => ({
+        ...t,
+        online: true,
+      }));
+
+      setTeachers(teachersAlwaysOnline);
       setPrice(data.lessonPriceUsd);
     } catch { /* retry on next tick */ }
   }, []);
@@ -126,23 +133,21 @@ export default function TeachersPage() {
                   ))}
                 </div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-                  <button className="button-primary" disabled={!teacher.online} onClick={() => startCall(teacher)}>
-                    <Video size={14} /> {language === 'ar' ? 'مكالمة فيديو' : 'Video call'}
-                  </button>
+                  <button className="button-primary" onClick={() => startCall(teacher)}>
+  <Video size={14} /> {language === 'ar' ? 'مكالمة فيديو' : 'Video call'}
+</button>
                   <button className="button-soft" onClick={() => setChatTeacher(teacher)}>
                     <MessageCircle size={14} /> {language === 'ar' ? 'شات' : 'Chat'}
                   </button>
                   <div className="contact-wrap">
                     <button
-                      className="button-primary contact-btn"
-                      disabled={!teacher.online || !teacher.whatsapp}
-                      onClick={() => setContact(contact === teacher.id ? null : teacher.id)}
-                      aria-expanded={contact === teacher.id}
-                      aria-haspopup="menu"
-                      title={!teacher.whatsapp ? (language === 'ar' ? 'رقم التواصل غير متاح بعد' : 'No contact number yet') : undefined}
-                    >
-                      <Phone size={14} /> {language === 'ar' ? 'تواصل' : 'Contact'}
-                    </button>
+  className="button-primary contact-btn"
+  onClick={() => setContact(contact === teacher.id ? null : teacher.id)}
+  aria-expanded={contact === teacher.id}
+  aria-haspopup="menu"
+>
+  <Phone size={14} /> {language === 'ar' ? 'تواصل' : 'Contact'}
+</button>
                     {contact === teacher.id && teacher.whatsapp && (
                       <div className="contact-menu" role="menu">
                         <a
