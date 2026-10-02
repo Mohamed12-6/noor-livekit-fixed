@@ -27,7 +27,7 @@ model Teacher {
   tags       String    @default("")
   initials   String    @default("م")
   whatsapp   String    @default("")
-  isOnline   Boolean   @default(false)
+  isOnline   Boolean   @default(true)
   lastSeenAt DateTime  @default(now())
   bookings   Booking[]
 }
