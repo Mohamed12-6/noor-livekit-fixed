@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { scryptSync, randomBytes } from 'node:crypto';
+import { scryptSync } from 'node:crypto';
 
 const db = new PrismaClient();
 
@@ -46,13 +46,38 @@ async function main() {
       update: {},
       create: { email: t.email, passwordHash: hash('teacher123'), name: t.name, role: 'TEACHER' },
     });
+
     await db.teacher.upsert({
       where: { userId: user.id },
-      update: { name: t.name, nameAr: t.nameAr, bio: t.bio, tags: t.tags, initials: t.initials, whatsapp: t.whatsapp },
-      create: { userId: user.id, name: t.name, nameAr: t.nameAr, bio: t.bio, tags: t.tags, initials: t.initials, whatsapp: t.whatsapp, isOnline: false },
+      update: { 
+        name: t.name, 
+        nameAr: t.nameAr, 
+        bio: t.bio, 
+        tags: t.tags, 
+        initials: t.initials, 
+        whatsapp: t.whatsapp,
+        isOnline: true // 👈 تحديث المدرسين الحاليين ليصبحوا أونلاين
+      },
+      create: { 
+        userId: user.id, 
+        name: t.name, 
+        nameAr: t.nameAr, 
+        bio: t.bio, 
+        tags: t.tags, 
+        initials: t.initials, 
+        whatsapp: t.whatsapp, 
+        isOnline: true // 👈 إنشاء المدرسين الجدد بحالة أونلاين
+      },
     });
     console.log('Seeded teacher:', t.email);
   }
 }
 
-main().finally(() => db.$disconnect());
+main()
+  .catch((e) => {
+    console.error('Error during seeding:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await db.$disconnect();
+  });
